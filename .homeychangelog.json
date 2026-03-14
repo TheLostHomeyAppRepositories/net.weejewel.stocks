@@ -16,5 +16,8 @@
   },
   "1.2.1": {
     "en": "Fixed an issue with Yahoo Finance."
+  },
+  "1.2.2": {
+    "en": "Fixed an issue where stocks would not show."
   }
 }
