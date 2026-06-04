@@ -1,0 +1,58 @@
+name: Update Yahoo Finance Dependency
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  main:
+    name: Update Yahoo Finance Dependency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update yahoo-finance2
+        run: npm install yahoo-finance2@latest
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if git diff --quiet package.json package-lock.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Bump Homey App Version
+        if: steps.check_changes.outputs.changed == 'true'
+        run: npx homey version patch --changelog "Updated the Yahoo Finance dependency."
+
+      - name: Commit, push & create Pull Request
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b chore/update-yahoo-finance
+          git add package.json package-lock.json app.json .homeychangelog.json
+          git commit -m "chore: update yahoo-finance2 dependency"
+          git push --force origin chore/update-yahoo-finance
+
+          gh pr create \
+            --title "chore: update yahoo-finance2 dependency" \
+            --body "Automated update of the \`yahoo-finance2\` dependency to the latest version." \
+            --base main \
+            --head chore/update-yahoo-finance \
+            || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
