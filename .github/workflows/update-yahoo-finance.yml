@@ -35,7 +35,7 @@ jobs:
 
       - name: Bump Homey App Version
         if: steps.check_changes.outputs.changed == 'true'
-        run: npx homey version patch --changelog "Updated the Yahoo Finance dependency."
+        run: npx homey app version patch --changelog "Updated the Yahoo Finance dependency."
 
       - name: Commit, push & create Pull Request
         if: steps.check_changes.outputs.changed == 'true'
