@@ -1,0 +1,50 @@
+name: Update Yahoo Finance Dependency
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Every Monday at 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  main:
+    name: Update Yahoo Finance Dependency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update yahoo-finance2
+        run: npm install yahoo-finance2@latest
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if git diff --quiet package.json package-lock.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Bump Homey App Version
+        if: steps.check_changes.outputs.changed == 'true'
+        run: npx homey version patch --changelog "Updated the Yahoo Finance dependency."
+
+      - name: Create Pull Request
+        if: steps.check_changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: 'chore: update yahoo-finance2 dependency'
+          branch: chore/update-yahoo-finance
+          title: 'chore: update yahoo-finance2 dependency'
+          body: 'Automated update of the `yahoo-finance2` dependency to the latest version.'
+          labels: dependencies
