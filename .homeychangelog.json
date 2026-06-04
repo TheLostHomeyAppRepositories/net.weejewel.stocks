@@ -19,5 +19,8 @@
   },
   "1.2.2": {
     "en": "Fixed an issue where stocks would not show."
+  },
+  "1.2.3": {
+    "en": "Updated the Yahoo Finance dependency."
   }
 }
