@@ -48,11 +48,13 @@ jobs:
           git commit -m "chore: update yahoo-finance2 dependency"
           git push --force origin chore/update-yahoo-finance
 
-          gh pr create \
-            --title "chore: update yahoo-finance2 dependency" \
-            --body "Automated update of the \`yahoo-finance2\` dependency to the latest version." \
-            --base main \
-            --head chore/update-yahoo-finance \
-            || true
+          # Create PR only if one doesn't already exist for this branch
+          if ! gh pr list --head chore/update-yahoo-finance --base main --state open --json number --jq '.[].number' | grep -q .; then
+            gh pr create \
+              --title "chore: update yahoo-finance2 dependency" \
+              --body "Automated update of the \`yahoo-finance2\` dependency to the latest version." \
+              --base main \
+              --head chore/update-yahoo-finance
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
