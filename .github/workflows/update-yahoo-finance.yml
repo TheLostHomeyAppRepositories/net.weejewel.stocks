@@ -44,7 +44,7 @@ jobs:
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git checkout -b chore/update-yahoo-finance
-          git add package.json package-lock.json app.json .homeychangelog.json
+          git add -A
           git commit -m "chore: update yahoo-finance2 dependency"
           git push --force origin chore/update-yahoo-finance
 
