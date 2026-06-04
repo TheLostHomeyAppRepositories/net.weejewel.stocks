@@ -1,8 +1,6 @@
 name: Update Yahoo Finance Dependency
 
 on:
-  schedule:
-    - cron: '0 6 * * 1'  # Every Monday at 06:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -39,12 +37,22 @@ jobs:
         if: steps.check_changes.outputs.changed == 'true'
         run: npx homey version patch --changelog "Updated the Yahoo Finance dependency."
 
-      - name: Create Pull Request
+      - name: Commit, push & create Pull Request
         if: steps.check_changes.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@v7
-        with:
-          commit-message: 'chore: update yahoo-finance2 dependency'
-          branch: chore/update-yahoo-finance
-          title: 'chore: update yahoo-finance2 dependency'
-          body: 'Automated update of the `yahoo-finance2` dependency to the latest version.'
-          labels: dependencies
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b chore/update-yahoo-finance
+          git add package.json package-lock.json app.json .homeychangelog.json
+          git commit -m "chore: update yahoo-finance2 dependency"
+          git push --force origin chore/update-yahoo-finance
+
+          gh pr create \
+            --title "chore: update yahoo-finance2 dependency" \
+            --body "Automated update of the \`yahoo-finance2\` dependency to the latest version." \
+            --base main \
+            --head chore/update-yahoo-finance \
+            || true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
